@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phase 1 - Phone System Control</title>
+<style>
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans SC", sans-serif;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 40px 24px;
+    background: #fafafa;
+    color: #1a1a1a;
+    line-height: 1.7;
+  }
+  h1 { font-size: 24px; border-bottom: 2px solid #0969da; padding-bottom: 12px; margin-bottom: 24px; }
+  h2 { font-size: 20px; margin-top: 36px; margin-bottom: 12px; }
+  h3 { font-size: 16px; margin-top: 28px; margin-bottom: 8px; color: #0969da; }
+  h4 { font-size: 14px; margin-top: 20px; margin-bottom: 6px; }
+  .meta { background: #e8f0fe; padding: 16px 20px; border-radius: 8px; margin-bottom: 32px; font-size: 14px; }
+  .meta span { display: inline-block; margin-right: 24px; }
+  .meta .label { color: #666; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0 24px 0; font-size: 14px; }
+  th { background: #0969da; color: #fff; padding: 10px 14px; text-align: left; font-weight: 600; }
+  td { padding: 8px 14px; border-bottom: 1px solid #e0e0e0; }
+  tr:hover td { background: #f0f6ff; }
+  .status-ok { color: #1a7f37; font-weight: 500; }
+  .status-warn { color: #bf8700; font-weight: 500; }
+  .status-party { color: #bf8700; font-weight: 500; }
+  .status-new { color: #0969da; font-weight: 500; }
+  .section-box { background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px 24px; margin-bottom: 24px; }
+  .footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid #e0e0e0; font-size: 13px; color: #666; }
+  .footer table { width: auto; font-size: 13px; }
+  .footer th { background: #555; }
+</style>
+</head>
+<body>
+
+<h1>Feature Specification: Phase 1 — Phone System Control</h1>
+
+<div class="meta">
+  <span><span class="label">分支：</span>develop</span>
+  <span><span class="label">创建日期：</span>2026-05-26</span>
+  <span><span class="label">状态：</span>Draft</span>
+</div>
+
+<p style="color:#555; font-style:italic; margin-bottom:32px;">输入：完善上游 Android 端已有的功能，新增手机本地硬件控制能力</p>
+
+<!-- ==================== A ==================== -->
+<h2>A. 上游现有功能（基线）</h2>
+
+<h3>📷 相机</h3>
+<table>
+  <tr><th>模块</th><th>命令</th><th>状态</th><th>说明</th></tr>
+  <tr><td>拍照</td><td>camera.snap</td><td class="status-warn">⚠️ 需完善</td><td>缺少 saveToGallery</td></tr>
+  <tr><td>录像</td><td>camera.clip</td><td class="status-ok">✅ 已有</td><td>—</td></tr>
+  <tr><td>相机列表</td><td>camera.list</td><td class="status-ok">✅ 已有</td><td>—</td></tr>
+</table>
+
+<h3>💻 设备信息</h3>
+<table>
+  <tr><th>模块</th><th>命令</th><th>状态</th><th>说明</th></tr>
+  <tr><td>设备状态</td><td>device.status</td><td class="status-ok">✅ 已有</td><td>电池、存储、网络、热状态</td></tr>
+  <tr><td>设备信息</td><td>device.info</td><td class="status-ok">✅ 已有</td><td>型号、系统版本、App 版本</td></tr>
+  <tr><td>设备权限</td><td>device.permissions</td><td class="status-ok">✅ 已有</td><td>相机/麦克风/定位等权限状态</td></tr>
+  <tr><td>设备健康</td><td>device.health</td><td class="status-ok">✅ 已有</td><td>内存、电池健康、功耗状态</td></tr>
+</table>
+
+<h3>📍 定位</h3>
+<table>
+  <tr><th>模块</th><th>命令</th><th>状态</th><th>说明</th></tr>
+  <tr><td>获取位置</td><td>location.get</td><td class="status-ok">✅ 已有</td><td>—</td></tr>
+</table>
+
+<h3>🔔 通知</h3>
+<table>
+  <tr><th>模块</th><th>命令</th><th>状态</th><th>说明</th></tr>
+  <tr><td>通知列表</td><td>notifications.list</td><td class="status-ok">✅ 已有</td><td>—</td></tr>
+  <tr><td>通知操作</td><td>notifications.actions</td><td class="status-ok">✅ 已有</td><td>—</td></tr>
+</table>
+
+<h3>👤 联系人</h3>
+<table>
+  <tr><th>模块</th><th>命令</th><th>状态</th><th>说明</th></tr>
+  <tr><td>搜索联系人</td><td>contacts.search</td><td class="status-ok">✅ 已有</td><td>—</td></tr>
+  <tr><td>添加联系人</td><td>contacts.add</td><td class="status-ok">✅ 已有</td><td>—</td></tr>
+</table>
+
+<h3>📅 日历</h3>
+<table>
+  <tr><th>模块</th><th>命令</th><th>状态</th><th>说明</th></tr>
+  <tr><td>查看日程</td><td>calendar.events</td><td class="status-ok">✅ 已有</td><td>—</td></tr>
+  <tr><td>添加日程</td><td>calendar.add</td><td class="status-ok">✅ 已有</td><td>—</td></tr>
+</table>
+
+<h3>🏃 运动</h3>
+<table>
+  <tr><th>模块</th><th>命令</th><th>状态</th><th>说明</th></tr>
+  <tr><td>活动识别</td><td>motion.activity</td><td class="status-ok">✅ 已有</td><td>—</td></tr>
+  <tr><td>计步器</td><td>motion.pedometer</td><td class="status-ok">✅ 已有</td><td>—</td></tr>
+</table>
+
+<h3>💬 SMS 与通话记录</h3>
+<table>
+  <tr><th>模块</th><th>命令</th><th>状态</th><th>说明</th></tr>
+  <tr><td>发送短信</td><td>sms.send</td><td class="status-party">⚠️ 仅 thirdParty</td><td>Play flavor 不可用</td></tr>
+  <tr><td>搜索短信</td><td>sms.search</td><td class="status-party">⚠️ 仅 thirdParty</td><td>Play flavor 不可用</td></tr>
+  <tr><td>通话记录</td><td>callLog.search</td><td class="status-party">⚠️ 仅 thirdParty</td><td>Play flavor 不可用</td></tr>
+</table>
+
+<h3>⚙️ 系统</h3>
+<table>
+  <tr><th>模块</th><th>命令</th><th>状态</th><th>说明</th></tr>
+  <tr><td>系统通知</td><td>system.notify</td><td class="status-ok">✅ 已有</td><td>—</td></tr>
+</table>
+
+<h3>🌐 Web UI</h3>
+<table>
+  <tr><th>模块</th><th>命令</th><th>状态</th><th>说明</th></tr>
+  <tr><td>显示页面</td><td>canvas.present</td><td class="status-ok">✅ 已有</td><td>—</td></tr>
+  <tr><td>隐藏页面</td><td>canvas.hide</td><td class="status-ok">✅ 已有</td><td>—</td></tr>
+  <tr><td>页面导航</td><td>canvas.navigate</td><td class="status-ok">✅ 已有</td><td>—</td></tr>
+  <tr><td>执行 JS</td><td>canvas.eval</td><td class="status-ok">✅ 已有</td><td>—</td></tr>
+  <tr><td>屏幕截图</td><td>canvas.snapshot</td><td class="status-ok">✅ 已有</td><td>—</td></tr>
+</table>
+
+<h3>🖼️ 照片</h3>
+<table>
+  <tr><th>模块</th><th>命令</th><th>状态</th><th>说明</th></tr>
+  <tr><td>最新照片</td><td>photos.latest</td><td class="status-ok">✅ 已有</td><td>—</td></tr>
+</table>
+
+<!-- ==================== B ==================== -->
+<h2>B. 上游功能完善（本阶段目标）</h2>
+<table>
+  <tr><th>模块</th><th>命令</th><th>当前问题</th><th>目标</th></tr>
+  <tr>
+    <td>相机拍照</td>
+    <td>camera.snap</td>
+    <td>可拍照，不保存到相册</td>
+    <td>新增 saveToGallery 参数，拍照后保存到 Pictures/OpenClaw/</td>
+  </tr>
+</table>
+
+<!-- ==================== C ==================== -->
+<h2>C. 新增设备控制能力</h2>
+
+<h3>🖥️ 屏幕控制</h3>
+<table>
+  <tr><th>模块</th><th>命令</th><th>当前状态</th><th>目标</th></tr>
+  <tr><td>亮度调节</td><td>device.screen.brightness</td><td class="status-new">未实现</td><td>可读取和设置屏幕亮度（0-255）</td></tr>
+  <tr><td>屏幕超时</td><td>device.screen.timeout</td><td class="status-new">未实现</td><td>可读取和设置屏幕超时时间</td></tr>
+</table>
+
+<h3>🔊 声音与模式</h3>
+<table>
+  <tr><th>模块</th><th>命令</th><th>当前状态</th><th>目标</th></tr>
+  <tr><td>音量控制</td><td>device.audio.volume</td><td class="status-new">未实现</td><td>可读取和设置媒体/铃声/闹钟音量</td></tr>
+  <tr><td>响铃模式</td><td>device.audio.mode</td><td class="status-new">未实现</td><td>切换静音/震动/响铃模式</td></tr>
+</table>
+
+<h3>📡 网络控制</h3>
+<table>
+  <tr><th>模块</th><th>命令</th><th>当前状态</th><th>目标</th></tr>
+  <tr><td>WiFi 开关</td><td>device.wifi</td><td class="status-new">未实现</td><td>读取和切换 WiFi 开关状态</td></tr>
+  <tr><td>蓝牙开关</td><td>device.bluetooth</td><td class="status-new">未实现</td><td>读取和切换蓝牙开关状态</td></tr>
+  <tr><td>飞行模式</td><td>device.airplane</td><td class="status-new">未实现</td><td>读取和切换飞行模式</td></tr>
+</table>
+
+<h3>🔋 性能与功耗控制</h3>
+<table>
+  <tr><th>模块</th><th>命令</th><th>当前状态</th><th>目标</th></tr>
+  <tr><td>性能模式</td><td>device.power.mode</td><td class="status-new">未实现</td><td>切换省电/均衡/高性能模式</td></tr>
+  <tr><td>功耗调节</td><td>device.power.policy</td><td class="status-new">未实现</td><td>设置功耗限制策略</td></tr>
+  <tr><td>CPU 调度</td><td>device.power.cpu</td><td class="status-new">未实现</td><td>读取和设置 CPU 调度策略</td></tr>
+</table>
+
+<!-- ==================== 成功标准 ==================== -->
+<h2>成功标准</h2>
+<ul>
+  <li>每个新增命令可被 AI 通过 Gateway 调用并返回正确结果</li>
+  <li>所有控制命令在真机上验证通过</li>
+  <li>saveToGallery 功能在主流 Android 版本（12-16）上一致可用</li>
+</ul>
+
+<!-- ==================== 边界约定 ==================== -->
+<h2>边界约定</h2>
+<ul>
+  <li>本次不涉及无障碍服务（Accessibility Service），App 自动化操控放到 Phase 2</li>
+  <li>每个功能的详细设计在各自的 plan.md 中展开</li>
+  <li>部分功能需系统级权限（如 WRITE_SETTINGS），测试时手动授权</li>
+</ul>
+
+<!-- ==================== Footer ==================== -->
+<div class="footer">
+<h2>变更记录</h2>
+<table>
+  <tr><th>版本</th><th>日期</th><th>变更内容</th><th>确认人</th></tr>
+  <tr><td>1.0.0</td><td>2026-05-26</td><td>初始版本</td><td>huangfusheng, sunxuewen</td></tr>
+</table>
+</div>
+
+</body>
+</html>

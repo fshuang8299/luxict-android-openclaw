@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phase 2 - App Ecosystem Integration</title>
+<style>
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans SC", sans-serif;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 40px 24px;
+    background: #fafafa;
+    color: #1a1a1a;
+    line-height: 1.7;
+  }
+  h1 { font-size: 24px; border-bottom: 2px solid #0969da; padding-bottom: 12px; margin-bottom: 24px; }
+  h2 { font-size: 20px; margin-top: 36px; margin-bottom: 12px; }
+  h3 { font-size: 16px; margin-top: 28px; margin-bottom: 8px; color: #0969da; }
+  h4 { font-size: 14px; margin-top: 20px; margin-bottom: 6px; }
+  .meta { background: #e8f0fe; padding: 16px 20px; border-radius: 8px; margin-bottom: 32px; font-size: 14px; }
+  .meta span { display: inline-block; margin-right: 24px; }
+  .meta .label { color: #666; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0 24px 0; font-size: 14px; }
+  th { background: #0969da; color: #fff; padding: 10px 14px; text-align: left; font-weight: 600; }
+  td { padding: 8px 14px; border-bottom: 1px solid #e0e0e0; }
+  tr:hover td { background: #f0f6ff; }
+  ul { padding-left: 20px; }
+  li { margin-bottom: 6px; }
+  .flow-box { background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 16px 20px; margin: 12px 0 24px 0; }
+  .flow-box ol { padding-left: 18px; }
+  .footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid #e0e0e0; font-size: 13px; color: #666; }
+  .footer table { width: auto; font-size: 13px; }
+  .footer th { background: #555; }
+</style>
+</head>
+<body>
+
+<h1>Feature Specification: Phase 2 — App Ecosystem Integration</h1>
+
+<div class="meta">
+  <span><span class="label">分支：</span>develop</span>
+  <span><span class="label">创建日期：</span>2026-05-26</span>
+  <span><span class="label">状态：</span>Draft</span>
+</div>
+
+<p style="color:#555; font-style:italic; margin-bottom:32px;">输入：打通手机 App 生态，通过 AI 操控第三方 App 完成智能打车、点外卖、规划路线等任务</p>
+
+<h2>技术前提</h2>
+
+<p>Phase 2 的核心能力依赖 <strong>Android Accessibility Service（无障碍服务）</strong>，这是 Android 系统提供的标准 API，允许 App 读取屏幕内容、模拟点击和输入，无需 root 权限。</p>
+
+<h3>所需底层能力</h3>
+<table>
+  <tr><th>能力</th><th>说明</th><th>依赖</th></tr>
+  <tr><td>App 启动</td><td>通过 Intent 或包名启动第三方 App</td><td style="color:#1a7f37">✅ Android API 已有</td></tr>
+  <tr><td>屏幕内容读取</td><td>获取当前屏幕的 UI 元素树（节点、文本、坐标）</td><td style="color:#bf8700">需无障碍服务</td></tr>
+  <tr><td>模拟触控</td><td>在指定坐标执行点击、长按、滑动</td><td style="color:#bf8700">需无障碍服务</td></tr>
+  <tr><td>文本输入</td><td>向输入框填入文字</td><td style="color:#bf8700">需无障碍服务</td></tr>
+  <tr><td>视觉理解</td><td>对屏幕截图进行 AI 多模态分析，判断当前界面状态</td><td style="color:#0969da">依赖 Gateway 多模态模型</td></tr>
+  <tr><td>动作编排</td><td>将复杂任务拆解为"观察→判断→操作"循环</td><td style="color:#0969da">AI Agent 层面实现</td></tr>
+</table>
+
+<h2>应用场景</h2>
+
+<h3>🚗 场景 1 — 智能打车</h3>
+<p><strong>目标：</strong>AI 可自动打开打车 App，完成从叫车到确认的全流程</p>
+
+<div class="flow-box">
+<strong>典型流程：</strong>
+<ol>
+  <li>用户说"帮我叫辆车去xxx"</li>
+  <li>AI 打开滴滴出行或高德地图</li>
+  <li>读取屏幕确认 App 就绪</li>
+  <li>输入目的地地址</li>
+  <li>选择车型（快车/专车/拼车）</li>
+  <li>确认叫车</li>
+  <li>返回叫车结果给用户</li>
+</ol>
+</div>
+
+<p><strong>涉及 App：</strong>滴滴出行、高德地图</p>
+
+<h3>🍜 场景 2 — 点外卖</h3>
+<p><strong>目标：</strong>AI 可自动打开外卖 App，完成搜索、选店、下单</p>
+
+<div class="flow-box">
+<strong>典型流程：</strong>
+<ol>
+  <li>用户说"帮我点一份xxx"</li>
+  <li>AI 打开美团或饿了么</li>
+  <li>搜索指定店铺或菜品</li>
+  <li>选择商品和规格</li>
+  <li>确认订单信息</li>
+  <li>跳转支付</li>
+  <li>返回下单结果</li>
+</ol>
+</div>
+
+<p><strong>涉及 App：</strong>美团、饿了么</p>
+
+<h3>🗺️ 场景 3 — 智能路线规划</h3>
+<p><strong>目标：</strong>AI 可自动规划出行路线，展示给用户</p>
+
+<div class="flow-box">
+<strong>典型流程：</strong>
+<ol>
+  <li>用户说"从A到B怎么走"</li>
+  <li>AI 打开地图 App</li>
+  <li>输入起点和终点</li>
+  <li>选择出行方式（驾车/公交/步行）</li>
+  <li>预览路线方案</li>
+  <li>返回路线信息给用户</li>
+</ol>
+</div>
+
+<p><strong>涉及 App：</strong>高德地图、百度地图</p>
+
+<h3>🧩 场景 4 — 生活服务（扩展方向）</h3>
+<table>
+  <tr><th>场景</th><th>涉及 App</th><th>说明</th></tr>
+  <tr><td>订酒店</td><td>携程、飞猪</td><td>搜索、筛选、预订</td></tr>
+  <tr><td>购物比价</td><td>淘宝、京东、拼多多</td><td>搜索商品、比较价格</td></tr>
+  <tr><td>生活缴费</td><td>支付宝、微信</td><td>缴费、账单查询</td></tr>
+  <tr><td>票务预订</td><td>猫眼、大麦</td><td>选座、购票</td></tr>
+</table>
+
+<h2>技术挑战与应对</h2>
+<table>
+  <tr><th>挑战</th><th>说明</th><th>应对方案</th></tr>
+  <tr><td>App UI 变化</td><td>第三方 App 更新后界面元素位置可能改变</td><td>基于语义匹配而非固定坐标</td></tr>
+  <tr><td>登录态</td><td>部分 App 需要登录才能操作</td><td>首次手动登录，后续维持态</td></tr>
+  <tr><td>验证码/滑块</td><td>部分操作有人机验证</td><td>需人工介入或 AI 视觉识别</td></tr>
+  <tr><td>多步骤失败回滚</td><td>中间步骤失败后需回退重试</td><td>编排引擎支持重试和回滚</td></tr>
+</table>
+
+<h2>边界约定</h2>
+<ul>
+  <li>首批聚焦高频场景（打车、外卖、导航），生活服务等后续扩展</li>
+  <li>支付环节涉及资金安全，建议首次由用户手动确认</li>
+  <li>部分 App 可能因反自动化检测拒绝操作，需持续适配</li>
+  <li>AI 技术持续演进，本 spec 将动态调整</li>
+</ul>
+
+<div class="footer">
+<h2>变更记录</h2>
+<table>
+  <tr><th>版本</th><th>日期</th><th>变更内容</th><th>确认人</th></tr>
+  <tr><td>1.0.0</td><td>2026-05-26</td><td>初始版本</td><td>huangfusheng, sunxuewen</td></tr>
+</table>
+</div>
+
+</body>
+</html>
