@@ -1,5 +1,6 @@
 package ai.openclaw.app.chat
 
+import ai.openclaw.app.BuildConfig
 import ai.openclaw.app.gateway.GatewaySession
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
@@ -170,7 +171,7 @@ class ChatController(
             put("sessionKey", JsonPrimitive(sessionKey))
             put("message", JsonPrimitive(text))
             put("thinking", JsonPrimitive(thinking))
-            put("timeoutMs", JsonPrimitive(30_000))
+            put("timeoutMs", JsonPrimitive(BuildConfig.CHAT_TIMEOUT_MS))
             put("idempotencyKey", JsonPrimitive(runId))
             if (attachments.isNotEmpty()) {
               put(

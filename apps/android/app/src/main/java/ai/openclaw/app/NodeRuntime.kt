@@ -351,7 +351,7 @@ class NodeRuntime(
             put("sessionKey", JsonPrimitive(resolveMainSessionKey()))
             put("message", JsonPrimitive(message))
             put("thinking", JsonPrimitive(chatThinkingLevel.value))
-            put("timeoutMs", JsonPrimitive(30_000))
+            put("timeoutMs", JsonPrimitive(BuildConfig.VOICE_TIMEOUT_MS))
             put("idempotencyKey", JsonPrimitive(idempotencyKey))
           }
         val response = operatorSession.request("chat.send", params.toString())
