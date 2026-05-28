@@ -95,7 +95,9 @@ class ConnectionManager(
 
   fun resolvedVersionName(): String {
     val versionName = BuildConfig.VERSION_NAME.trim().ifEmpty { "dev" }
-    return if (BuildConfig.DEBUG && !versionName.contains("dev", ignoreCase = true)) {
+    // luxict flavor sets STRIP_DEV_SUFFIX=true to keep release/debug names identical.
+    // Upstream behavior: append "-dev" in DEBUG builds.
+    return if (!BuildConfig.STRIP_DEV_SUFFIX && BuildConfig.DEBUG && !versionName.contains("dev", ignoreCase = true)) {
       "$versionName-dev"
     } else {
       versionName
