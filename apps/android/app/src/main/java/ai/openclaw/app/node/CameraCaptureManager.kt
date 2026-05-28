@@ -1,24 +1,28 @@
 package ai.openclaw.app.node
 
+import ai.openclaw.app.PermissionRequester
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.ContentValues
 import android.content.Context
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
-import android.content.pm.PackageManager
 import android.hardware.camera2.CameraCharacteristics
+import android.net.Uri
+import android.os.Build
+import android.os.Environment
+import android.provider.MediaStore
 import android.util.Base64
 import androidx.camera.camera2.interop.Camera2CameraInfo
 import androidx.camera.core.CameraInfo
-import androidx.exifinterface.media.ExifInterface
-import androidx.lifecycle.LifecycleOwner
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.lifecycle.ProcessCameraProvider
-import androidx.camera.video.FileOutputOptions
 import androidx.camera.video.FallbackStrategy
+import androidx.camera.video.FileOutputOptions
 import androidx.camera.video.Quality
 import androidx.camera.video.QualitySelector
 import androidx.camera.video.Recorder
@@ -28,22 +32,34 @@ import androidx.camera.video.VideoRecordEvent
 import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.checkSelfPermission
 import androidx.core.graphics.scale
-import ai.openclaw.app.PermissionRequester
+import androidx.exifinterface.media.ExifInterface
+import androidx.lifecycle.LifecycleOwner
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
 import kotlinx.serialization.json.JsonObject
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.io.OutputStream
 import java.util.concurrent.Executor
-import kotlin.math.roundToInt
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
+import kotlin.math.roundToInt
 
-class CameraCaptureManager(private val context: Context) {
-  data class Payload(val payloadJson: String)
-  data class FilePayload(val file: File, val durationMs: Long, val hasAudio: Boolean)
+class CameraCaptureManager(
+  private val context: Context,
+) {
+  data class Payload(
+    val payloadJson: String,
+  )
+
+  data class FilePayload(
+    val file: File,
+    val durationMs: Long,
+    val hasAudio: Boolean,
+  )
+
   data class CameraDeviceInfo(
     val id: String,
     val name: String,
@@ -52,6 +68,7 @@ class CameraCaptureManager(private val context: Context) {
   )
 
   @Volatile private var lifecycleOwner: LifecycleOwner? = null
+
   @Volatile private var permissionRequester: PermissionRequester? = null
 
   fun attachLifecycleOwner(owner: LifecycleOwner) {
@@ -74,8 +91,9 @@ class CameraCaptureManager(private val context: Context) {
     val granted = checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
     if (granted) return
 
-    val requester = permissionRequester
-      ?: throw IllegalStateException("CAMERA_PERMISSION_REQUIRED: grant Camera permission")
+    val requester =
+      permissionRequester
+        ?: throw IllegalStateException("CAMERA_PERMISSION_REQUIRED: grant Camera permission")
     val results = requester.requestIfMissing(listOf(Manifest.permission.CAMERA))
     if (results[Manifest.permission.CAMERA] != true) {
       throw IllegalStateException("CAMERA_PERMISSION_REQUIRED: grant Camera permission")
@@ -86,8 +104,9 @@ class CameraCaptureManager(private val context: Context) {
     val granted = checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED
     if (granted) return
 
-    val requester = permissionRequester
-      ?: throw IllegalStateException("MIC_PERMISSION_REQUIRED: grant Microphone permission")
+    val requester =
+      permissionRequester
+        ?: throw IllegalStateException("MIC_PERMISSION_REQUIRED: grant Microphone permission")
     val results = requester.requestIfMissing(listOf(Manifest.permission.RECORD_AUDIO))
     if (results[Manifest.permission.RECORD_AUDIO] != true) {
       throw IllegalStateException("MIC_PERMISSION_REQUIRED: grant Microphone permission")
@@ -103,6 +122,7 @@ class CameraCaptureManager(private val context: Context) {
       val quality = (parseQuality(params) ?: 0.95).coerceIn(0.1, 1.0)
       val maxWidth = parseMaxWidth(params) ?: 1600
       val deviceId = parseDeviceId(params)
+      val saveToGallery = parseSaveToGallery(params)
 
       val provider = context.cameraProvider()
       val capture = ImageCapture.Builder().build()
@@ -111,9 +131,10 @@ class CameraCaptureManager(private val context: Context) {
       provider.unbindAll()
       provider.bindToLifecycle(owner, selector, capture)
 
-      val (bytes, orientation) = capture.takeJpegWithExif(context.mainExecutor())
-      val decoded = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-        ?: throw IllegalStateException("UNAVAILABLE: failed to decode captured image")
+      val (bytes, orientation) = capture.takeJpegWithExif(context.mainExecutor(), context.cacheDir)
+      val decoded =
+        BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+          ?: throw IllegalStateException("UNAVAILABLE: failed to decode captured image")
       val rotated = rotateBitmapByExif(decoded, orientation)
       val scaled =
         if (maxWidth > 0 && rotated.width > maxWidth) {
@@ -156,9 +177,11 @@ class CameraCaptureManager(private val context: Context) {
               out.toByteArray()
             },
           )
+        val galleryUri = if (saveToGallery) saveImageToGallery(result.bytes, facing) else null
         val base64 = Base64.encodeToString(result.bytes, Base64.NO_WRAP)
+        val uriPart = if (galleryUri != null) ",\"galleryUri\":\"$galleryUri\"" else ""
         Payload(
-          """{"format":"jpg","base64":"$base64","width":${result.width},"height":${result.height}}""",
+          """{"format":"jpg","base64":"$base64","width":${result.width},"height":${result.height}$uriPart}""",
         )
       } finally {
         scaled.recycle()
@@ -177,23 +200,30 @@ class CameraCaptureManager(private val context: Context) {
       val deviceId = parseDeviceId(params)
       if (includeAudio) ensureMicPermission()
 
-      android.util.Log.w("CameraCaptureManager", "clip: start facing=$facing duration=$durationMs audio=$includeAudio deviceId=${deviceId ?: "-"}")
+      android.util.Log.w(
+        "CameraCaptureManager",
+        "clip: start facing=$facing duration=$durationMs audio=$includeAudio deviceId=${deviceId ?: "-"}",
+      )
 
       val provider = context.cameraProvider()
       android.util.Log.w("CameraCaptureManager", "clip: got camera provider")
 
       // Use LOWEST quality for smallest files over WebSocket
-      val recorder = Recorder.Builder()
-        .setQualitySelector(
-          QualitySelector.from(Quality.LOWEST, FallbackStrategy.lowerQualityOrHigherThan(Quality.LOWEST))
-        )
-        .build()
+      val recorder =
+        Recorder
+          .Builder()
+          .setQualitySelector(
+            QualitySelector.from(Quality.LOWEST, FallbackStrategy.lowerQualityOrHigherThan(Quality.LOWEST)),
+          ).build()
       val videoCapture = VideoCapture.withOutput(recorder)
       val selector = resolveCameraSelector(provider, facing, deviceId)
 
       // CameraX requires a Preview use case for the camera to start producing frames;
       // without it, the encoder may get no data (ERROR_NO_VALID_DATA).
-      val preview = androidx.camera.core.Preview.Builder().build()
+      val preview =
+        androidx.camera.core.Preview
+          .Builder()
+          .build()
       // Provide a dummy SurfaceTexture so the preview pipeline activates
       val surfaceTexture = android.graphics.SurfaceTexture(0)
       surfaceTexture.setDefaultBufferSize(640, 480)
@@ -214,7 +244,7 @@ class CameraCaptureManager(private val context: Context) {
       android.util.Log.w("CameraCaptureManager", "clip: warming up camera 1.5s...")
       kotlinx.coroutines.delay(1_500)
 
-      val file = File.createTempFile("openclaw-clip-", ".mp4")
+      val file = File.createTempFile("openclaw-clip-", ".mp4", context.cacheDir)
       val outputOptions = FileOutputOptions.Builder(file).build()
 
       val finalized = kotlinx.coroutines.CompletableDeferred<VideoRecordEvent.Finalize>()
@@ -224,14 +254,16 @@ class CameraCaptureManager(private val context: Context) {
           .prepareRecording(context, outputOptions)
           .apply {
             if (includeAudio) withAudioEnabled()
-          }
-          .start(context.mainExecutor()) { event ->
+          }.start(context.mainExecutor()) { event ->
             android.util.Log.w("CameraCaptureManager", "clip: event ${event.javaClass.simpleName}")
             if (event is VideoRecordEvent.Status) {
               android.util.Log.w("CameraCaptureManager", "clip: recording status update")
             }
             if (event is VideoRecordEvent.Finalize) {
-              android.util.Log.w("CameraCaptureManager", "clip: finalize hasError=${event.hasError()} error=${event.error} cause=${event.cause}")
+              android.util.Log.w(
+                "CameraCaptureManager",
+                "clip: finalize hasError=${event.hasError()} error=${event.error} cause=${event.cause}",
+              )
               finalized.complete(event)
             }
           }
@@ -254,7 +286,11 @@ class CameraCaptureManager(private val context: Context) {
           throw IllegalStateException("UNAVAILABLE: camera clip finalize timed out")
         }
       if (finalizeEvent.hasError()) {
-        android.util.Log.e("CameraCaptureManager", "clip: FAILED error=${finalizeEvent.error}, cause=${finalizeEvent.cause}", finalizeEvent.cause)
+        android.util.Log.e(
+          "CameraCaptureManager",
+          "clip: FAILED error=${finalizeEvent.error}, cause=${finalizeEvent.cause}",
+          finalizeEvent.cause,
+        )
         // Check file size for debugging
         val fileSize = withContext(Dispatchers.IO) { if (file.exists()) file.length() else -1 }
         android.util.Log.e("CameraCaptureManager", "clip: file exists=${file.exists()} size=$fileSize")
@@ -271,7 +307,10 @@ class CameraCaptureManager(private val context: Context) {
       FilePayload(file = file, durationMs = durationMs.toLong(), hasAudio = includeAudio)
     }
 
-  private fun rotateBitmapByExif(bitmap: Bitmap, orientation: Int): Bitmap {
+  private fun rotateBitmapByExif(
+    bitmap: Bitmap,
+    orientation: Int,
+  ): Bitmap {
     val matrix = Matrix()
     when (orientation) {
       ExifInterface.ORIENTATION_ROTATE_90 -> matrix.postRotate(90f)
@@ -296,6 +335,59 @@ class CameraCaptureManager(private val context: Context) {
     return rotated
   }
 
+  /**
+   * Save the compressed JPEG bytes to the device's MediaStore (gallery).
+   * On API 29+ (Android 10+), no extra storage permission is needed.
+   * Returns the content URI string for the saved image, or null on failure.
+   */
+  private suspend fun saveImageToGallery(jpegBytes: ByteArray, facing: String): String? =
+    withContext(Dispatchers.IO) {
+      try {
+        val filename = "openclaw_snap_${System.currentTimeMillis()}_$facing.jpg"
+        val contentValues = ContentValues().apply {
+          put(MediaStore.Images.Media.DISPLAY_NAME, filename)
+          put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+          put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/OpenClaw")
+          put(MediaStore.Images.Media.IS_PENDING, 1)
+        }
+
+        val resolver = context.contentResolver
+        val collection = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+          MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
+        } else {
+          MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+        }
+
+        val uri = resolver.insert(collection, contentValues)
+        android.util.Log.w("CameraCapture", "saveToGallery: insert uri=$uri")
+        if (uri == null) {
+          android.util.Log.e("CameraCapture", "saveToGallery: insert returned null")
+          return@withContext null
+        }
+
+        val outputStream = resolver.openOutputStream(uri)
+        if (outputStream == null) {
+          android.util.Log.e("CameraCapture", "saveToGallery: openOutputStream null, removing empty record")
+          resolver.delete(uri, null, null)
+          return@withContext null
+        }
+        outputStream.use { stream -> stream.write(jpegBytes) }
+
+        android.util.Log.w("CameraCapture", "saveToGallery: bytes written, clearing PENDING")
+
+        // Clear the IS_PENDING flag so the image appears in gallery immediately
+        contentValues.clear()
+        contentValues.put(MediaStore.Images.Media.IS_PENDING, 0)
+        val updated = resolver.update(uri, contentValues, null, null)
+        android.util.Log.w("CameraCapture", "saveToGallery: update rows=$updated uri=$uri")
+
+        return@withContext uri.toString()
+      } catch (e: Exception) {
+        android.util.Log.e("CameraCapture", "saveToGallery: FAILED", e)
+        return@withContext null
+      }
+    }
+
   private fun parseFacing(params: JsonObject?): String? {
     val value = parseJsonString(params, "facing")?.trim()?.lowercase() ?: return null
     return when (value) {
@@ -304,15 +396,13 @@ class CameraCaptureManager(private val context: Context) {
     }
   }
 
-  private fun parseQuality(params: JsonObject?): Double? =
-    parseJsonDouble(params, "quality")
+  private fun parseQuality(params: JsonObject?): Double? = parseJsonDouble(params, "quality")
 
   private fun parseMaxWidth(params: JsonObject?): Int? =
     parseJsonInt(params, "maxWidth")
       ?.takeIf { it > 0 }
 
-  private fun parseDurationMs(params: JsonObject?): Int? =
-    parseJsonInt(params, "durationMs")
+  private fun parseDurationMs(params: JsonObject?): Int? = parseJsonInt(params, "durationMs")
 
   private fun parseDeviceId(params: JsonObject?): String? =
     parseJsonString(params, "deviceId")
@@ -320,6 +410,9 @@ class CameraCaptureManager(private val context: Context) {
       ?.takeIf { it.isNotEmpty() }
 
   private fun parseIncludeAudio(params: JsonObject?): Boolean? = parseJsonBooleanFlag(params, "includeAudio")
+
+  private fun parseSaveToGallery(params: JsonObject?): Boolean =
+    parseJsonBooleanFlag(params, "saveToGallery") ?: false
 
   private fun Context.mainExecutor(): Executor = ContextCompat.getMainExecutor(this)
 
@@ -335,7 +428,8 @@ class CameraCaptureManager(private val context: Context) {
     if (!availableIds.contains(deviceId)) {
       throw IllegalStateException("INVALID_REQUEST: unknown camera deviceId '$deviceId'")
     }
-    return CameraSelector.Builder()
+    return CameraSelector
+      .Builder()
       .addCameraFilter { infos -> infos.filter { cameraIdOrNull(it) == deviceId } }
       .build()
   }
@@ -372,8 +466,7 @@ class CameraCaptureManager(private val context: Context) {
   }
 
   @SuppressLint("UnsafeOptInUsageError")
-  private fun cameraIdOrNull(info: CameraInfo): String? =
-    runCatching { Camera2CameraInfo.from(info).cameraId }.getOrNull()
+  private fun cameraIdOrNull(info: CameraInfo): String? = runCatching { Camera2CameraInfo.from(info).cameraId }.getOrNull()
 }
 
 private suspend fun Context.cameraProvider(): ProcessCameraProvider =
@@ -392,9 +485,12 @@ private suspend fun Context.cameraProvider(): ProcessCameraProvider =
   }
 
 /** Returns (jpegBytes, exifOrientation) so caller can rotate the decoded bitmap. */
-private suspend fun ImageCapture.takeJpegWithExif(executor: Executor): Pair<ByteArray, Int> =
+private suspend fun ImageCapture.takeJpegWithExif(
+  executor: Executor,
+  tempDir: File,
+): Pair<ByteArray, Int> =
   suspendCancellableCoroutine { cont ->
-    val file = File.createTempFile("openclaw-snap-", ".jpg")
+    val file = File.createTempFile("openclaw-snap-", ".jpg", tempDir)
     val options = ImageCapture.OutputFileOptions.Builder(file).build()
     takePicture(
       options,
@@ -408,10 +504,11 @@ private suspend fun ImageCapture.takeJpegWithExif(executor: Executor): Pair<Byte
         override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
           try {
             val exif = ExifInterface(file.absolutePath)
-            val orientation = exif.getAttributeInt(
-              ExifInterface.TAG_ORIENTATION,
-              ExifInterface.ORIENTATION_NORMAL,
-            )
+            val orientation =
+              exif.getAttributeInt(
+                ExifInterface.TAG_ORIENTATION,
+                ExifInterface.ORIENTATION_NORMAL,
+              )
             val bytes = file.readBytes()
             cont.resume(Pair(bytes, orientation))
           } catch (e: Exception) {
