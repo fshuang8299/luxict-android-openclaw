@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- PostOnboardingTabs -->
+    <string name="tab_chat">Chat</string>
+    <string name="tab_voice">Voice</string>
+    <string name="tab_screen">Screen</string>
+    <string name="tab_settings">Settings</string>
+    <string name="tab_connect">Connect</string>
+    <string name="title_openclaw">OpenClaw</string>
+    <string name="status_connected">Connected</string>
+    <string name="status_connecting">Connecting</string>
+    <string name="status_error">Error</string>
+    <string name="status_approval">Approval</string>
+    <string name="status_auth">Auth</string>
+
+    <!-- Connect tab -->
+    <string name="connect_gateway">Connect Gateway</string>
+    <string name="connect_to_get_started">Connect to your gateway to get started.</string>
+    <string name="connection_method">Connection method</string>
+    <string name="setup_code">Setup Code</string>
+    <string name="manual">Manual</string>
+    <string name="android_emulator">Android Emulator</string>
+    <string name="localhost">Localhost</string>
+    <string name="paste_setup_code">Paste code from `openclaw qr --setup-code-only`</string>
+    <string name="enter_host_port">Enter host/port manually</string>
+    <string name="use_tls">Use TLS</string>
+    <string name="token_optional">Token (Optional)</string>
+    <string name="advanced_controls">Advanced controls</string>
+    <string name="approve_phone_on_gateway">Approve this phone on the gateway. OpenClaw retries automatically while this screen stays open.</string>
+    <string name="cancel">Cancel</string>
+    <string name="copy_report">Copy Report for Claw</string>
+    <string name="scan_qr">Scan QR code</string>
+    <string name="advanced_setup">Advanced setup</string>
+    <string name="paste_code_hint">Paste setup code or enter host/port manually. Private LAN ws:// is supported; Tailscale/public hosts need wss://.</string>
+    <string name="setup_code_help">Run `openclaw qr` on your gateway host, then scan the code with this device. For Tailscale or public hosts, use wss:// or Tailscale Serve.</string>
+    <string name="tap_connect_to_verify">Tap Connect to verify your gateway is reachable.</string>
+
+    <!-- Onboarding -->
+    <string name="mobile_setup">Mobile Setup</string>
+    <string name="welcome_step">Welcome</string>
+    <string name="gateway_step">Gateway</string>
+    <string name="permissions_step">Permissions</string>
+    <string name="connect_step">Connect</string>
+    <string name="review_step">Review</string>
+    <string name="next">Next</string>
+    <string name="back">Back</string>
+    <string name="card_connect_gateway">Connect to your gateway</string>
+    <string name="card_scan_or_manual">Scan a QR code or enter your host manually</string>
+    <string name="card_choose_permissions">Choose your permissions</string>
+    <string name="card_enable_what_you_need">Enable only what you need, change anytime</string>
+    <string name="card_chat_voice_screen">Chat, voice, and screen</string>
+    <string name="card_full_operator_control">Full operator control from your phone</string>
+    <string name="card_verify_connection">Verify your connection</string>
+    <string name="card_live_check">Live check before you enter the app</string>
+
+    <!-- Permissions -->
+    <string name="gateway_discovery">Gateway discovery</string>
+    <string name="find_gateways_on_network">Find gateways on your local network</string>
+    <string name="location">Location</string>
+    <string name="share_location_while_open">Share device location while app is open</string>
+    <string name="notifications">Notifications</string>
+    <string name="alerts_and_foreground">Alerts and foreground service notices</string>
+    <string name="notification_listener">Notification listener</string>
+    <string name="read_and_act_on_notifications">Read and act on your notifications</string>
+    <string name="microphone">Microphone</string>
+    <string name="voice_transcription">Voice transcription in the Voice tab</string>
+    <string name="camera">Camera</string>
+    <string name="take_photos_and_video">Take photos and short video clips</string>
+    <string name="photos">Photos</string>
+    <string name="access_recent_photos">Access your recent photos</string>
+    <string name="contacts">Contacts</string>
+    <string name="search_and_add_contacts">Search and add contacts</string>
+    <string name="calendar">Calendar</string>
+    <string name="call_log">Call Log</string>
+    <string name="not_granted">Not granted</string>
+    <string name="granted">Granted</string>
+    <string name="all_settings_change_later">All settings can be changed later in Settings.</string>
+    <string name="activity_and_step_tracking">Activity and step tracking</string>
+
+    <!-- Voice tab -->
+    <string name="tap_mic_or_talk">Tap mic or Talk</string>
+    <string name="mic_sends_turns">Mic sends turns; Talk keeps the conversation open.</string>
+    <string name="muted">Muted</string>
+    <string name="open_settings">Open settings</string>
+    <string name="thinking">&lt;OpenClaw is thinking…&gt;</string>
+    <string name="talk">Talk</string>
+    <string name="turn_mic_on">Turn microphone on</string>
+    <string name="turn_talk_on">Turn Talk Mode on</string>
+    <string name="speaker">Speaker</string>
+    <string name="connected_mic_off">Connected · Mic off</string>
+
+    <!-- Chat composer -->
+    <string name="chat_send">Send</string>
+    <string name="chat_attach">Attach</string>
+    <string name="chat_abort">Abort</string>
+    <string name="chat_refresh">Refresh</string>
+    <string name="chat_type_message">Type a message…</string>
+    <string name="chat_gateway_offline">Gateway is offline. Connect first in the Connect tab.</string>
+    <string name="chat_select_thinking">Select thinking level</string>
+    <string name="chat_thinking_low">Low</string>
+    <string name="chat_thinking_medium">Medium</string>
+    <string name="chat_thinking_high">High</string>
+
+    <!-- Chat messages -->
+    <string name="chat_no_messages">No messages yet</string>
+    <string name="chat_thinking_dots">Thinking…</string>
+    <string name="chat_running_tools">Running tools…</string>
+    <string name="chat_tools">Tools</string>
+    <string name="chat_openclaw_live">OpenClaw · Live</string>
+    <string name="chat_image_unavailable">Image unavailable</string>
+    <string name="chat_unsupported_attachment">Unsupported attachment</string>
+    <string name="chat_more_tools">… +%d more</string>
+    <string name="chat_error">CHAT ERROR</string>
+
+    <!-- Settings -->
+    <string name="settings_data_access">DATA ACCESS</string>
+    <string name="settings_media">MEDIA</string>
+    <string name="settings_personal_data">PERSONAL DATA</string>
+    <string name="settings_connection">Connection</string>
+    <string name="settings_advanced">Advanced</string>
+    <string name="settings_allow_in_talk_mode">Allow in Talk Mode</string>
+    <string name="settings_blank_keeps_notifications">Blank keeps notification events on this device\'s default notification route. Set a key only to pin forwarding into a different session.</string>
+    <string name="settings_all_packages_forwarded">All packages except listed IDs are forwarded.</string>
+    <string name="settings_forward_notifications">Forward notifications</string>
+    <string name="settings_connection_key">Connection key</string>
+    <string name="settings_session_key">Session key</string>
+    <string name="settings_access_recent_photos">Access recent photos.</string>
+    <string name="settings_alerts_and_foreground">Alerts and foreground service.</string>
+    <string name="settings_device_info">%1$s · %2$s</string>
+
+    <!-- Connect Review -->
+    <string name="method_manual">Manual</string>
+    <string name="method_qr_setup_code">QR / Setup Code</string>
+    <string name="method_qr_code">QR Code</string>
+    <string name="permissions_none">None selected</string>
+    <string name="review_title">Review</string>
+    <string name="review_method">METHOD</string>
+    <string name="review_gateway">GATEWAY</string>
+    <string name="review_permissions">PERMISSIONS</string>
+
+    <!-- Connection results -->
+    <string name="connection_failed">Connection Failed</string>
+    <string name="connection_failed_hint">Copy this report and give it to your Claw.</string>
+
+    <!-- Gateway -->
+    <string name="gateway_connection">Gateway Connection</string>
+
+    <!-- General -->
+    <string name="connect">Connect</string>
+</resources>

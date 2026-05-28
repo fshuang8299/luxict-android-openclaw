@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">OpenClaw 节点</string>
+
+    <!-- PostOnboardingTabs -->
+    <string name="tab_chat">聊天</string>
+    <string name="tab_voice">语音</string>
+    <string name="tab_screen">屏幕</string>
+    <string name="tab_settings">设置</string>
+    <string name="tab_connect">连接</string>
+    <string name="title_openclaw">OpenClaw</string>
+    <string name="status_connected">已连接</string>
+    <string name="status_connecting">连接中</string>
+    <string name="status_error">错误</string>
+    <string name="status_approval">待审批</string>
+    <string name="status_auth">认证中</string>
+
+    <!-- Connect tab -->
+    <string name="connect_gateway">连接网关</string>
+    <string name="connect_to_get_started">连接到你的网关即可开始使用。</string>
+    <string name="connection_method">连接方式</string>
+    <string name="setup_code">设置码</string>
+    <string name="manual">手动</string>
+    <string name="android_emulator">模拟器</string>
+    <string name="localhost">本机</string>
+    <string name="paste_setup_code">从 `openclaw qr --setup-code-only` 粘贴设置码</string>
+    <string name="enter_host_port">手动输入主机地址和端口</string>
+    <string name="use_tls">使用 TLS</string>
+    <string name="token_optional">令牌（可选）</string>
+    <string name="advanced_controls">高级控制</string>
+    <string name="approve_phone_on_gateway">在网关上批准此手机。在此页面保持打开状态时，OpenClaw 会自动重试。</string>
+    <string name="cancel">取消</string>
+    <string name="copy_report">复制报告</string>
+    <string name="scan_qr">扫描二维码</string>
+    <string name="advanced_setup">高级设置</string>
+    <string name="paste_code_hint">从 `openclaw qr --setup-code-only` 粘贴设置码。私有局域网 ws:// 受支持；Tailscale/公网需要 wss://。</string>
+    <string name="setup_code_help">在网关上运行 `openclaw qr`，然后用此设备扫描二维码。Tailscale 或公网主机请使用 wss:// 或 Tailscale Serve。</string>
+    <string name="tap_connect_to_verify">点击连接以验证网关是否可达。</string>
+
+    <!-- Onboarding - Welcome -->
+    <string name="mobile_setup">移动端设置</string>
+    <string name="welcome_step">欢迎</string>
+    <string name="gateway_step">网关</string>
+    <string name="permissions_step">权限</string>
+    <string name="connect_step">连接</string>
+    <string name="review_step">确认</string>
+    <string name="next">下一步</string>
+    <string name="back">返回</string>
+    <string name="card_connect_gateway">连接网关</string>
+    <string name="card_scan_or_manual">扫描二维码或手动输入主机地址</string>
+    <string name="card_choose_permissions">选择权限</string>
+    <string name="card_enable_what_you_need">按需开启，随时可改</string>
+    <string name="card_chat_voice_screen">聊天、语音与屏幕控制</string>
+    <string name="card_full_operator_control">手机上完整的操作员控制</string>
+    <string name="card_verify_connection">验证连接</string>
+    <string name="card_live_check">连接前实时检测</string>
+
+    <!-- Permissions -->
+    <string name="gateway_discovery">发现网关</string>
+    <string name="find_gateways_on_network">查找局域网内的网关</string>
+    <string name="location">位置</string>
+    <string name="share_location_while_open">应用打开时共享设备位置</string>
+    <string name="notifications">通知</string>
+    <string name="alerts_and_foreground">提醒和前台服务通知</string>
+    <string name="notification_listener">通知监听器</string>
+    <string name="read_and_act_on_notifications">读取并处理你的通知</string>
+    <string name="microphone">麦克风</string>
+    <string name="voice_transcription">语音标签页中的语音转录</string>
+    <string name="camera">相机</string>
+    <string name="take_photos_and_video">拍照和录制短视频</string>
+    <string name="photos">照片</string>
+    <string name="access_recent_photos">访问近期照片</string>
+    <string name="contacts">通讯录</string>
+    <string name="search_and_add_contacts">搜索和添加联系人</string>
+    <string name="calendar">日历</string>
+    <string name="call_log">通话记录</string>
+    <string name="not_granted">未授权</string>
+    <string name="granted">已授权</string>
+    <string name="all_settings_change_later">所有设置均可稍后在设置中更改。</string>
+    <string name="activity_and_step_tracking">活动和步数追踪</string>
+
+    <!-- Voice tab -->
+    <string name="tap_mic_or_talk">点击麦克风或语音通话</string>
+    <string name="mic_sends_turns">麦克风发话；语音通话保持对话开启。</string>
+    <string name="muted">已静音</string>
+    <string name="open_settings">打开设置</string>
+    <string name="thinking">&lt;OpenClaw 思考中…&gt;</string>
+    <string name="talk">语音通话</string>
+    <string name="turn_mic_on">开启麦克风</string>
+    <string name="turn_talk_on">开启语音通话模式</string>
+    <string name="speaker">扬声器</string>
+    <string name="connected_mic_off">已连接 · 麦克风关闭</string>
+
+    <!-- Chat composer -->
+    <string name="chat_send">发送</string>
+    <string name="chat_attach">附件</string>
+    <string name="chat_abort">中止</string>
+    <string name="chat_refresh">刷新</string>
+    <string name="chat_type_message">输入消息…</string>
+    <string name="chat_gateway_offline">网关离线。请先在连接标签页中连接。</string>
+    <string name="chat_select_thinking">选择思考级别</string>
+    <string name="chat_thinking_low">低</string>
+    <string name="chat_thinking_medium">中</string>
+    <string name="chat_thinking_high">高</string>
+
+    <!-- Chat messages -->
+    <string name="chat_no_messages">暂无消息</string>
+    <string name="chat_thinking_dots">思考中…</string>
+    <string name="chat_running_tools">运行工具中…</string>
+    <string name="chat_tools">工具</string>
+    <string name="chat_openclaw_live">OpenClaw · 在线</string>
+    <string name="chat_image_unavailable">图片不可用</string>
+    <string name="chat_unsupported_attachment">不支持的附件</string>
+    <string name="chat_more_tools">还有 %d 个工具</string>
+    <string name="chat_error">聊天错误</string>
+
+    <!-- Settings -->
+    <string name="settings_data_access">数据访问</string>
+    <string name="settings_media">媒体</string>
+    <string name="settings_personal_data">个人数据</string>
+    <string name="settings_connection">连接</string>
+    <string name="settings_advanced">高级</string>
+    <string name="settings_allow_in_talk_mode">允许在语音通话模式中使用</string>
+    <string name="settings_blank_keeps_notifications">留空则将通知事件保留在此设备的默认通知路由上。设置密钥以将转发固定到不同的会话。</string>
+    <string name="settings_all_packages_forwarded">除已列出的包外，所有包均被转发。</string>
+    <string name="settings_forward_notifications">转发通知</string>
+    <string name="settings_connection_key">连接密钥</string>
+    <string name="settings_session_key">会话密钥</string>
+    <string name="settings_access_recent_photos">访问近期照片。</string>
+    <string name="settings_alerts_and_foreground">提醒和前台服务。</string>
+    <string name="settings_device_info">%1$s · %2$s</string>
+
+    <!-- Connect Review -->
+    <string name="method_manual">手动</string>
+    <string name="method_qr_setup_code">二维码 / 设置码</string>
+    <string name="method_qr_code">二维码</string>
+    <string name="permissions_none">无</string>
+    <string name="review_title">确认</string>
+    <string name="review_method">方式</string>
+    <string name="review_gateway">网关</string>
+    <string name="review_permissions">权限</string>
+
+    <!-- Connection results -->
+    <string name="connection_failed">连接失败</string>
+    <string name="connection_failed_hint">请复制此报告并交给你的 Claw。</string>
+
+    <!-- Gateway -->
+    <string name="gateway_connection">网关连接</string>
+
+    <!-- General -->
+    <string name="connect">连接</string>
+</resources>
