@@ -19,6 +19,34 @@
 原则：所有 Android 端修改必须通过真机（ADB 连接）验证后才能提交。
 说明：模拟器无法覆盖相机、MediaStore 等硬件相关功能的真实行为。
 
+### V. 上游解耦优先
+原则：所有定制改动必须以"最小耦合"方式实现，让 `git pull upstream/main` 的冲突面尽可能小。
+
+**强制规则（按优先级从高到低）：**
+
+1. **零修改区**：`src/**`（上游 TypeScript 服务端、Gateway 协议、扩展系统）禁止修改。
+   - 必须改时，须先在下方「上游修改例外清单」登记，并写明原因与回退方案。
+   - 协议版本（`PROTOCOL_VERSION`）、共享 schema 一律不得在 fork 内 bump。
+
+2. **Overlay 区**：Android 端 fork 专属代码与资源走 product flavor 隔离。
+   - 新增/修改放 `apps/android/app/src/<flavor>/`（如 `luxict/`），不污染 `apps/android/app/src/main/`。
+   - 中文翻译、品牌文案、客户定制 UI 走 flavor 资源目录。
+
+3. **参数化区**：对上游既有文件的小幅参数调整（超时、开关、默认值）必须通过 `BuildConfig` 注入，不得硬编码。
+   - 若上游文件没有 BuildConfig 入口，先提"hook injection PR"给上游加入口；上游未合并前，可临时在 fork 内改但须登记。
+
+4. **可追溯性**：所有计划外改动（无 spec/plan 而发生的）必须在提交前补办 `specs/<phase>/unplanned/` 记录，含改动文件、原因、未来如何回归上游或保留。
+
+**上游修改例外清单：**
+
+| 文件 | 改动摘要 | 原因 | 计划回退方式 | 上游 PR 链接 |
+|------|---------|------|-------------|------------|
+| `apps/android/app/src/main/java/ai/openclaw/app/chat/ChatController.kt` | 硬编码 `timeoutMs=30_000` 改为读 `BuildConfig.CHAT_TIMEOUT_MS` | luxict 客户场景需 120s 超时；上游不应硬编码 | 提 hook injection PR 给上游接受 BuildConfig 入口 | 待提 |
+| `apps/android/app/src/main/java/ai/openclaw/app/NodeRuntime.kt` | 硬编码 `timeoutMs=30_000` 改为读 `BuildConfig.VOICE_TIMEOUT_MS` | luxict 语音流需 45s 超时 | 同上 | 待提 |
+| `apps/android/app/src/main/java/ai/openclaw/app/node/ConnectionManager.kt` | 增加 `BuildConfig.STRIP_DEV_SUFFIX` 开关控制 `-dev` 后缀逻辑 | luxict 渠道不需要 release/debug 区分版本名 | 同上 | 待提 |
+
+详细背景见 `specs/phase-1/unplanned/2026-05-29-decoupling.md`。
+
 ## 技术栈与约束
 
 ### Android 端（修改目标区域）
@@ -141,4 +169,5 @@
 | 版本 | 日期 | 变更内容 | 确认人 |
 |------|------|---------|--------|
 | 1.0.0 | 2026-05-26 | 初始版本 | huangfusheng, sunxuewen |
+| 1.1.0 | 2026-05-28 | 新增「原则 V：上游解耦优先」与上游修改例外清单 | （待确认） |
 
