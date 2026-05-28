@@ -1,4 +1,7 @@
 import com.android.build.api.variant.impl.VariantOutputImpl
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.TimeZone
 
 val dnsjavaInetAddressResolverService = "META-INF/services/java.net.spi.InetAddressResolverProvider"
 
@@ -73,6 +76,11 @@ android {
         }
     }
 
+    // luxict flavor uses build-time UTC date for versionCode/Name to avoid
+    // manual bumps on every release. play/thirdParty keep defaultConfig values.
+    val utcDate = SimpleDateFormat("yyyyMMdd").apply { timeZone = TimeZone.getTimeZone("UTC") }.format(Date())
+    val utcVersionName = SimpleDateFormat("yyyy.M.d").apply { timeZone = TimeZone.getTimeZone("UTC") }.format(Date())
+
     flavorDimensions += "store"
 
     productFlavors {
@@ -80,11 +88,33 @@ android {
             dimension = "store"
             buildConfigField("boolean", "OPENCLAW_ENABLE_SMS", "false")
             buildConfigField("boolean", "OPENCLAW_ENABLE_CALL_LOG", "false")
+            buildConfigField("boolean", "IS_LUXICT_BUILD", "false")
+            buildConfigField("long", "CHAT_TIMEOUT_MS", "30000L")
+            buildConfigField("long", "VOICE_TIMEOUT_MS", "30000L")
+            buildConfigField("boolean", "STRIP_DEV_SUFFIX", "false")
         }
         create("thirdParty") {
             dimension = "store"
             buildConfigField("boolean", "OPENCLAW_ENABLE_SMS", "true")
             buildConfigField("boolean", "OPENCLAW_ENABLE_CALL_LOG", "true")
+            buildConfigField("boolean", "IS_LUXICT_BUILD", "false")
+            buildConfigField("long", "CHAT_TIMEOUT_MS", "30000L")
+            buildConfigField("long", "VOICE_TIMEOUT_MS", "30000L")
+            buildConfigField("boolean", "STRIP_DEV_SUFFIX", "false")
+        }
+        // luxict: fork 定制发行渠道。所有 fork 专属代码/资源/配置走此 flavor。
+        // 详见 specs/constitution.md 原则 V：上游解耦优先。
+        create("luxict") {
+            dimension = "store"
+            applicationIdSuffix = ".luxict"
+            versionCode = Integer.parseInt(utcDate + "00")
+            versionName = utcVersionName
+            buildConfigField("boolean", "OPENCLAW_ENABLE_SMS", "true")
+            buildConfigField("boolean", "OPENCLAW_ENABLE_CALL_LOG", "true")
+            buildConfigField("boolean", "IS_LUXICT_BUILD", "true")
+            buildConfigField("long", "CHAT_TIMEOUT_MS", "120000L")
+            buildConfigField("long", "VOICE_TIMEOUT_MS", "45000L")
+            buildConfigField("boolean", "STRIP_DEV_SUFFIX", "true")
         }
     }
 
